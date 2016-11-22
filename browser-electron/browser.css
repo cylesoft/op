@@ -18,16 +18,26 @@ p {
     main OTP browser window stuff
 */
 
+div#toolbar input {
+    border: 1px solid #ccc;
+    padding: 0.25em;
+    width: 100%;
+}
+
 div#toolbar {
     position: fixed;
     padding: 4px;
     width: 100%;
     background-color: white;
+    display: flex;
 }
 
-input#address-bar {
-    border: 1px solid #ccc;
-    padding: 0.25em;
+div#otp-verb-box {
+    flex: 200px 'flex-basis';
+    margin-right: 0.4em;
+}
+
+div#address-bar-box {
     width: 100%;
 }
 

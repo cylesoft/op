@@ -26,8 +26,9 @@ const BrowserWindow = electron.BrowserWindow;
 let onpWindow;
 let mainWindow;
 
-// the current URL we're at
+// the current URL we're at and the verb used to get there
 global.current_url = '';
+global.current_verb = '';
 
 // our main app's cache of ONP servers to use
 let onp_cache = [];
@@ -113,26 +114,32 @@ ipcMain.on('update-onp-list', (event, list) => {
 });
 
 // when we're told to browse somewhere, try to!
-ipcMain.on('browse', (event, url) => {
+ipcMain.on('browse', (event, info) => {
     console.log('NEW BROWSE EVENT');
-    console.log('gonna try to fetch ' + url);
+    console.log('gonna try to fetch ', info);
 
     if (mainWindow === null) {
         return;
     }
 
-    getResource(url);
+    if (info.verb === undefined || info.url === undefined) {
+        return;
+    }
+
+    getResource(info.verb, info.url);
 });
 
 /**
  * Helper function to get a resource at the given URL.
  * Does the hard work of using the ONP and OTP protocols.
+ * @param {String} verb The verb to use to access the resource.
  * @param {String} url The url to access.
  */
-function getResource(url) {
+function getResource(verb, url) {
     console.log('gonna use ONP servers:');
     console.log(onp_cache);
     global.current_url = url;
+    global.curent_verb = verb;
 
     let request_path;
     let request_host;
@@ -162,7 +169,7 @@ function getResource(url) {
         console.log('request is an IP already, no ONP lookup necessary');
 
         // do the OTP request then
-        otp.req(request_host, request_path, request_host, function(page) {
+        otp.request(verb, request_host, request_path, request_host, null, function(page) {
             // console.log(page); // got it!
             parseResponse(page);
         });
@@ -190,7 +197,7 @@ function getResource(url) {
                 console.log('IP for hostname ' + request_host + ' is ' + otp_ip);
 
                 // do the OTP request now
-                otp.req(otp_ip, request_path, request_host, function(page) {
+                otp.request(verb, otp_ip, request_path, request_host, null, function(page) {
                     // console.log(page); // got it!
                     parseResponse(page);
                 });

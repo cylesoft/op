@@ -1,5 +1,7 @@
 const electron = require('electron');
 const ipcRenderer = electron.ipcRenderer;
+
+const verb_input = document.getElementById('otp-verb');
 const address_input = document.getElementById('address-bar');
 const content_area = document.getElementById('page-content');
 
@@ -13,10 +15,14 @@ address_input.addEventListener('keyup', (event) => {
 
 function browse() {
     var url = address_input.value.trim();
-    if (url === '') {
+    var verb = verb_input.value.trim();
+    if (url === '' || verb === '') {
         return;
     }
-    ipcRenderer.send('browse', url);
+    ipcRenderer.send('browse', {
+        verb: verb,
+        url: url,
+    });
 }
 
 function show(what) {
