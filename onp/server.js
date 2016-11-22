@@ -33,8 +33,8 @@ for (let i in obscurity_entries) {
     // get the domain name part
     let onp_domain = pieces[1].trim();
 
-    // ignore any domain names that have already been defined
-    if (onp_addresses[onp_domain] !== undefined) {
+    // ignore any domain names that are empty, or have already been defined
+    if (onp_domain === '' || onp_addresses[onp_domain] !== undefined) {
         continue;
     }
 
