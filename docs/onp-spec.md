@@ -10,7 +10,11 @@ The idea of ONP is very simple: it's a service that you ask "what IP is domain.l
 
 ## ONP Domain Name Specification
 
-There is only one rule for ONP domain names: they must be shorter than 512 bytes. That's 512 ASCII characters, or a bunch of emoji, or other UTF-8 multibyte characters.
+There is only one rule for ONP domain names: they must not contain forward slashes (as in `/`) or newlines (as in `\n`).
+
+Forward slashes are reserved for resource paths in the Obscure Transfer Protocol (OTP), and newlines are used to separate parts of OTP requests.
+
+Otherwise, you're free to use long names, short names, ASCII characters, UTF-8 characters, emoji, etc.
 
 ## Requests
 
@@ -58,3 +62,9 @@ When a domain name maps to a known IP address:
 When a domain name's record is probably on another server:
 
     domain.lol try 192.168.1.5
+
+A funny complicated definition, pointing to an IPv6 address:
+
+    some mighty dicks here abcd:1234:abcd:1234:abcd:1234:abcd:1234
+
+Any other lines in the file that don't conform to this standard are ignored.
