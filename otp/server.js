@@ -1,5 +1,5 @@
 /**
- * OTP server
+ * Obscure Transfer Protocol server
  */
 
 // import standard libs
@@ -12,6 +12,51 @@ const otp_server_port = 21337;
 const otp_file_root = '../otproot'; // the local file path that represents the file root
 const index_path = '/lol'; // the default file to look up for root requests
 const otp_server_type = 'Obscure Transfer Protocol Basic Server'; // lol
+const definition_regex = /^(.+) ([a-z]+)$/i;
+const otp_verbs = {};
+
+// get our supported domain names!
+const obscurity_file_contents = fs.readFileSync('obscurity', { encoding: 'UTF-8' });
+
+// let's go through our supported domain names list and parse em
+const obscurity_entries = obscurity_file_contents.split('\n');
+for (let i in obscurity_entries) {
+    // ignore any blank lines
+    if (obscurity_entries[i].trim() === '') {
+        continue;
+    }
+
+    // cut the definition up into pieces
+    let pieces = obscurity_entries[i].trim().match(definition_regex);
+
+    // ignore any line that doesn't fit our expectations
+    if (pieces === null || pieces.length < 3) {
+        continue;
+    }
+
+    // grab the custom verb part
+    let otp_custom_verb = pieces[1].trim();
+
+    // ignore any custom verbs that collapse to nothing, or have already been defined
+    if (otp_custom_verb === '' || otp_verbs[otp_custom_verb] !== undefined) {
+        continue;
+    }
+
+    // grab the real verb we're mapping to
+    let otp_real_verb = pieces[2].trim();
+
+    // if the real verb isn't supported, ignore this line
+    if (
+        otp_real_verb !== 'hey' &&
+        otp_real_verb !== 'req' &&
+        otp_real_verb !== 'takethis'
+    ) {
+        continue;
+    }
+
+    // map our custom verb to the real verb
+    otp_verbs[otp_custom_verb] = otp_real_verb;
+}
 
 // set up TLS server options
 const server_options = {
@@ -23,7 +68,7 @@ const server_options = {
 var server = tls.createServer(server_options, function(c) {
     let currentTime = new Date();
     console.log(currentTime.toString() + ' client connected');
-    console.log(currentTime.toString() + ' connection is' + (c.authorized ? 'authorized' : 'unauthorized'));
+    console.log(currentTime.toString() + ' connection is ' + (c.authorized ? 'authorized' : 'unauthorized'));
 
     // set the proper encoding
     c.setEncoding('utf8');
@@ -42,57 +87,86 @@ var server = tls.createServer(server_options, function(c) {
 
         // the incoming request string
         let request_string = data.toString().trim();
-        console.log(currentTime.toString() + ' new request: ' + request_string);
+        console.log(currentTime.toString() + ' new request: ' + request_string.replace(/\n/g, ' \\n '));
 
         // separate request line from headers
-        let request_headers = request_string.split("\n");
+        let request_headers = request_string.split('\n');
 
-        // get the request line itself
-        let otp_request = request_headers[0];
-        request_headers.splice(0, 1); // reset headers to not include it
+        // the incoming request must have at least 3 lines
+        if (request_headers.length < 3) {
+            c.write('otp/1.0 wat'); // dunno what to do with the incoming request, it's already wrong
+            c.end();
+            return;
+        }
 
-        console.log(currentTime.toString() + ' request headers: ', request_headers.join(', '));
-
-        // clear out and compress excess white space
-        otp_request = otp_request.replace(/ {2,}/g, ' ');
-        console.log(currentTime.toString() + ' cleaned OTP request: ' + otp_request);
-
-        // break down the request string
-        let request_parts = otp_request.split(' ');
-        console.log(currentTime.toString() + ' request pieces: ' + request_parts.join(', '));
-
-        // get OTP request version
-        var request_version = request_parts[0].toLowerCase();
+        // the request's OTP version should be on the first line by itself
+        let otp_version = request_headers[0].trim();
 
         // bail out when protocol doesn't work
-        if (request_version !== 'otp/1.0') {
+        if (otp_version !== 'otp/1.0') {
             console.log(currentTime.toString() + ' unsupported protocol');
             c.write('otp/1.0 nope');
             c.end();
             return;
         }
 
-        // get the incoming method type
-        let otp_method = request_parts[1].toLowerCase();
+        // the OTP verb being used in the request should be the second line
+        let otp_verb = request_headers[1].trim();
 
-        // get the incoming host and path piece, parse em
-        let otp_path = request_parts[2];
-        otp_path = path.normalize(otp_path);
-        let otp_path_parts = /^([-_a-z0-9\.]+)\//i.exec(otp_path);
-        console.log(currentTime.toString() + ' request path parts: ' + otp_path_parts.join(', '));
-        let otp_host = otp_path_parts[1];
-        otp_path = otp_path.replace(otp_host, '');
-
-        // oh cool
-        console.log(currentTime.toString() + ' request host: ' + otp_host);
-        console.log(currentTime.toString() + ' request path: ' + otp_path);
-
-        // bad path string? bail out
-        if (otp_path.charAt(0) !== '/') {
+        // make sure the verb isn't empty
+        if (otp_verb === '') {
+            console.log(currentTime.toString() + ' verb was empty');
             c.write('otp/1.0 nope');
             c.end();
             return;
         }
+
+        console.log(currentTime.toString() + ' incoming verb is: ' + otp_verb);
+
+        // look up the real verb that maps to the given custom verb
+        let otp_real_verb = otp_verbs[otp_verb];
+
+        // make sure the mapping exists
+        if (otp_real_verb === undefined) {
+            console.log(currentTime.toString() + ' verb is unsupported');
+            c.write('otp/1.0 nope');
+            c.end();
+            return;
+        }
+
+        console.log(currentTime.toString() + ' real verb is: ' + otp_real_verb);
+
+        // the OTP domain name and resource path should be the third line
+        let otp_domain_and_path = request_headers[2].trim();
+
+        // make sure the domain and path part isn't empty
+        if (otp_domain_and_path === '') {
+            console.log(currentTime.toString() + ' domain and path line was empty');
+            c.write('otp/1.0 nope');
+            c.end();
+            return;
+        }
+
+        request_headers.splice(0, 3); // reset headers to not include the first 3 lines
+
+        console.log(currentTime.toString() + ' request headers: ', request_headers.join(', '));
+
+        // get the incoming host and path piece, parse em
+        let otp_path_breakpoint = otp_domain_and_path.indexOf('/');
+        let otp_domain;
+        let otp_path;
+        if (otp_path_breakpoint === -1) {
+            otp_domain = otp_domain_and_path;
+            otp_path = '/';
+        } else {
+            otp_domain = otp_domain_and_path.substring(0, otp_path_breakpoint);
+            otp_path = otp_domain_and_path.substring(otp_path_breakpoint);
+            otp_path = path.normalize(otp_path);
+        }
+
+        // oh cool
+        console.log(currentTime.toString() + ' request host: ' + otp_domain);
+        console.log(currentTime.toString() + ' request path: ' + otp_path);
 
         // set up actual file path
         let file_path = '';
@@ -103,7 +177,7 @@ var server = tls.createServer(server_options, function(c) {
         }
 
         // do something based on the OTP method
-        if (otp_method === 'hey') {
+        if (otp_real_verb === 'hey') {
             // HEY requests just check for a file
             console.log(currentTime.toString() + ' new HEY request for ' + otp_path);
             if (fs.existsSync(file_path)) {
@@ -111,7 +185,7 @@ var server = tls.createServer(server_options, function(c) {
             } else {
                 new_response_status = 'otp/1.0 nope';
             }
-        } else if (otp_method == 'req') {
+        } else if (otp_real_verb == 'req') {
             // REQ requests want the actual contents of a file
             console.log(currentTime.toString() + ' new REQ request for ' + otp_path);
             if (fs.existsSync(file_path)) {
@@ -120,7 +194,7 @@ var server = tls.createServer(server_options, function(c) {
             } else {
                 new_response_status = 'otp/1.0 nope';
             }
-        } else if (otp_method == 'takethis') {
+        } else if (otp_real_verb == 'takethis') {
             // TAKETHIS requests are like POST requests, they have data included for parsing
             console.log(currentTime.toString() + ' new TAKETHIS request for ' + otp_path);
 
@@ -130,7 +204,7 @@ var server = tls.createServer(server_options, function(c) {
             new_response_body = 'TAKETHIS method not supported yet.'
         } else {
             // welp. dunno what to do.
-            console.log(currentTime.toString() + ' error: no OTP method/verb given');
+            console.log(currentTime.toString() + ' error: no valid OTP method/verb given');
             new_response_status = 'otp/1.0 nope';
         }
 

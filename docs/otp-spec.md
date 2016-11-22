@@ -6,37 +6,58 @@ OTP is based heavily on HTTP, but made _specifically incompatible_.
 
 ## Requests
 
-A basic OTP request from a client is contained on one line and looks like this:
+A basic OTP request from a client is contained on three lines (separated by `\n` newlines) and looks like this:
 
-    otp/1.0 req domain.lol
+    otp/1.0
+    req
+    domain.lol
 
-That translates to a OTP version 1.0 request to `domain.lol` for the resource at path `/` (which is the default value when no path is specified after the domain address). Here's an example for a non-`/` resource:
+That translates to a OTP version 1.0 request to `domain.lol` using the verb `req` specifying the resource at path `/` (which is the default value when no path is specified after the domain address). Here's an example for a non-`/` resource:
 
-    otp/1.0 req domain.lol/something
+    otp/1.0
+    req
+    domain.lol/something
 
 Where `/something` is a resource being served by the OTP server at `domain.lol`.
 
 More advanced requests contain more than one line in the request. For example, you can include request headers directly underneath the request string:
 
-    otp/1.0 req domain.lol/what
+    otp/1.0
+    req
+    domain.lol/what
     header-name value
 
 You can also include data, separated from the headers by an empty newline, when using certain request methods:
 
-    otp/1.0 takethis domain.lol/handler
+    otp/1.0
+    takethis
+    domain.lol/handler
     data-type json
 
     {"wut":"huh?"}
 
 In that example, the client is sending a JSON object to `domain.lol/handler` via a `takethis` request.
 
+All OTP requests are broken up into key pieces:
+
+- The **OTP version**, so we know that the following assumptions can be made.
+- The **verb**, which specifies some kind of operation. In these examples, the verbs have been `req` and `takethis`.
+- The **domain name**, which specifies where the resource lives.
+- The **path**, which specifies exactly what resource on the OTP server.
+- Any **request headers** which give more specificity or further information about our request.
+- Any **data** we want to send along with the request, which is separated from the headers by two newlines (`\n\n`).
+
 ### Request Method/Verb Strings
 
-Here are the possible standard methods/verbs that can be used in a request, following the regex `/^[a-z]{2,32}$/i`:
+OTP servers are encouraged to use whatever verbs they want. Request verbs must only obey the rule that **they must not contain any spaces**. Any other characters, including UTF-8 multibyte characters, are fine.
 
-- `req` is asking the server for the content at the specified resource path.
-- `hey` is asking whether the specified resource path exists, but not for the content itself.
-- `takethis` is for sending data from the client to a resource on the server; the request line is then followed by the content to be received by the server.
+It's up to the OTP server to define what actions correspond to what verbs. These are the example defaults used in the demo OTP server included in this repository:
+
+- `req` is for asking the server for the content at the specified resource path.
+- `hey` is for asking whether the specified resource path exists, but not for the content itself.
+- `takethis` is for sending data from the client to a resource on the server; the request line is then followed by the data to be received by the server.
+
+And any custom verbs to replace these are mapped in a definition file.
 
 ### Request Header Format
 
@@ -57,9 +78,13 @@ Some common request headers include:
 - `data-type` informs the server how to interpret the data included in the request.
 - `client-type` informs the server what kind of client is making the request.
 
+But OTP servers are encouraged to accept any kind of request headers.
+
 ## Responses
 
-When performing a `req` request for a resource that exists, a OTP client should expect a response from the OTP server in the following format:
+Unlike request verbs, which can be freely defined by the OTP server, OTP responses have a strict definition. (Unless you want to define your own version of the Obscure Transfer Protocol, in which case please define your responses with a version other than `otp/1.0`.)
+
+When performing any verb request for a resource that exists, an OTP client should expect a response from the OTP server in the following format:
 
     otp/1.0 okay
     header-name Value
@@ -80,11 +105,15 @@ Some common response headers include:
 - `server-type` informs the client what kind of server is interpreting the request and generating the response.
 - `accepted-types` informs the client what kind of data is accepted by this handler in a comma-separated list. Useful in response to a `hey` request.
 
+But OTP servers are encouraged to send back whatever response headers they want.
+
 ### Response Status Code Strings
 
 Here are the possible standard response status code strings, following the regex `/^[a-z]{2,32}$/i`:
 
 - `okay` means the resource was found and is contained within the response content area.
-- `sure` means the resource does exist, but does not contain any of the content. Useful in response to a `hey` request.
+- `sure` means the resource does exist, but does not contain any of the content. Useful in response to the example `hey` request.
 - `nope` means the resource was not returned for some reason; the reason may be contained in the response content area.
 - `moved` means the resource was moved somewhere else; the new resource path will be contained in the response content area.
+
+Again, if you decide to change these for your OTP server, please **do not** use `otp/1.0` as the server protocol version string.

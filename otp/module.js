@@ -81,10 +81,10 @@ OTP.request = function(verb, ip, path, hostname, data, callback, otp_server_port
         console.log('connection is ' + (tls_stream.authorized ? 'authorized' : 'unauthorized'));
 
         // build our request string
-        let request_string = 'otp/1.0 ' + verb + ' ' + hostname + path;
+        let request_string = 'otp/1.0' + '\n' + verb + '\n' + hostname + path;
 
         // if we were given data, append it to the request
-        if (data !== undefined) {
+        if (data !== null && data !== undefined) {
             request_string += '\n\n' + data;
         }
 
