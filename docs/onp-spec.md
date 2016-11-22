@@ -10,13 +10,11 @@ The idea of ONP is very simple: it's a service that you ask "what IP is domain.l
 
 ## ONP Domain Name Specification
 
-Domain names served by ONP must conform to this RegEx format: `/^([-a-z0-9]{2,122}\.)?[-a-z0-9]{2,122}\.[a-z]{2,10}$/i`
-
-Therefore, the maximum length of any ONP domain is 256 characters.
+There is only one rule for ONP domain names: they must be shorter than 512 bytes. That's 512 ASCII characters, or a bunch of emoji, or other UTF-8 multibyte characters.
 
 ## Requests
 
-A standard ONP request is simply a domain name string, such as `domain.lol`. That's all. Nothing else.
+A standard ONP request is simply a domain name string, such as `domain.lol` or `somebody's website`. That's all. Nothing else.
 
 The connection to the ONP server happens over a TLS-secured TCP request to port 21335.
 
