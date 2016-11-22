@@ -1,0 +1,64 @@
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+body, input, textarea {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 16px;
+}
+
+p {
+    line-height: 1.4;
+    margin-bottom: 0.8em;
+}
+
+/*
+    main OTP browser window stuff
+*/
+
+div#toolbar {
+    position: fixed;
+    padding: 4px;
+    width: 100%;
+    background-color: white;
+}
+
+input#address-bar {
+    border: 1px solid #ccc;
+    padding: 0.25em;
+    width: 100%;
+}
+
+div#page-content {
+    padding: 3em 1em 1em 1em;
+}
+
+div#page-content > * {
+    line-height: 1.4;
+    margin-bottom: 0.8rem;
+}
+
+div#page-content p.otp-error {
+    padding: 1em;
+    background: #333;
+    color: #ff8c8c;
+}
+
+/*
+    ONP config window stuff.
+*/
+
+body#onp-config-window {
+    padding: 1em;
+}
+
+textarea#onp-server-list {
+    width: 100%;
+    height: 100px;
+    font-family: monospace;
+    font-size: 0.75em;
+    padding: 0.5em;
+    margin-bottom: 0.8em;
+}

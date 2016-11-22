@@ -1,0 +1,16 @@
+{
+  "name": "obscure-protocol-browser-electron",
+  "version": "1.0.0",
+  "description": "A minimal Obscure Protocol browser",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "cyle",
+  "devDependencies": {
+    "electron": "^1.4.1"
+  },
+  "dependencies": {
+    "markdown": "^0.5.0"
+  }
+}
