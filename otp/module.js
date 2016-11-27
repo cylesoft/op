@@ -2,7 +2,7 @@
  * OTP client module, for use in other node.js projects.
  * Note: does not include any ONP functionality.
  */
-
+const fs = require('fs');
 const tls = require('tls');
 
 // this'll hold our OTP helper functions
@@ -72,7 +72,19 @@ OTP.request = function(verb, ip, path, hostname, data, callback, otp_server_port
 
     // our TLS client options
     let tls_client_options = {
-        rejectUnauthorized: false
+        ca: [
+            fs.readFileSync('../op.crt.pem'),
+        ],
+        checkServerIdentity: (hostname, cert) => {
+            console.log('server name is: ' + hostname);
+            console.log('cert is: ', cert);
+            if (cert === undefined || cert.subject === undefined && cert.subject.CN === undefined) {
+                // throw new Error('Certificate must have a CN field.');
+            }
+            if (hostname !== cert.subject.CN) {
+                // throw new Error('Certificate\'s CN "' + cert.subject.CN + '" does not match your request to hostname "'+hostname+'"');
+            }
+        },
     };
 
     // set up our TLS stream to the CTP server

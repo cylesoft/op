@@ -7,11 +7,14 @@ const content_area = document.getElementById('page-content');
 
 // address_input.value = remote.getGlobal('current_url');
 
-address_input.addEventListener('keyup', (event) => {
+address_input.addEventListener('keyup', browse_keyup);
+verb_input.addEventListener('keyup', browse_keyup);
+
+function browse_keyup(event) {
     if (event.keyCode == 13) { // ENTER key
         browse();
     }
-});
+}
 
 function browse() {
     var url = address_input.value.trim();

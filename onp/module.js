@@ -26,12 +26,27 @@ module.exports.getRecord = function(hostname, callback, onp_server, onp_server_p
     }
 
     // TLS client options
-    let client_options = {
-        rejectUnauthorized: false
+    let tls_client_options = {
+        ca: [
+            fs.readFileSync('../op.crt.pem'),
+        ],
+        // rejectUnauthorized: false,
+        checkServerIdentity: (servername, cert) => {
+            console.log('server name is: ' + servername);
+            console.log('cert is: ', cert);
+            if (cert === undefined || cert.subject === undefined && cert.subject.CN === undefined) {
+                // throw new Error('Certificate must have a CN field.');
+            }
+            if (servername !== cert.subject.CN) {
+                // throw new Error('Certificate\'s CN "' + cert.subject.CN + '" does not match your request to hostname "'+servername+'"');
+            }
+        },
     };
 
     // create our TLS stream and send along the given hostname
-    let tls_stream = tls.connect(onp_server_port, onp_server, client_options, function() {
+    let tls_stream = tls.connect(onp_server_port, onp_server, tls_client_options, function() {
+        console.log('client connected to ONP server');
+        console.log('connection is ' + (tls_stream.authorized ? 'authorized' : 'unauthorized'));
         tls_stream.write(hostname.trim() + '\n');
     });
 
