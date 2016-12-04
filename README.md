@@ -7,7 +7,7 @@ Obscure Protocol (OP) is an experiment in replacing HTTP and DNS with protocols 
 - **ONP**, AKA Obscure Name Protocol, a DNS-like service that expects hostnames and responds with IP addresses.
 - **OTP**, AKA Obscure Transfer Protocol, an HTTP-like service that expects requests for resources and responds with the contents of those files.
 
-Both are meant to be fully over-the-wire TLS-encrypted with strong (but decentralized) public key cryptography.
+Both are meant to be fully over-the-wire TLS-encrypted with strong (but decentralized) public key cryptography. For more information, and a general thoughts behind OP, check out [the INTENTION file](INTENTION.md).
 
 ## Why...?
 
