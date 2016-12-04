@@ -2,12 +2,12 @@
 
 ## What...?
 
-Obscure Protocol (OP) is an experiment, in which I build my own internet-like thing. It (currently) has two primary features:
+Obscure Protocol (OP) is an experiment in replacing HTTP and DNS with protocols that are drastically more secure by default. It (currently) has two primary features:
 
 - **ONP**, AKA Obscure Name Protocol, a DNS-like service that expects hostnames and responds with IP addresses.
-- **OTP**, AKA Obscure Transfer Protocol, an HTTP-like service that expects requests for files and responds with the contents of those files.
+- **OTP**, AKA Obscure Transfer Protocol, an HTTP-like service that expects requests for resources and responds with the contents of those files.
 
-Both are meant to be over-the-wire TLS-encrypted.
+Both are meant to be fully over-the-wire TLS-encrypted with strong (but decentralized) public key cryptography.
 
 ## Why...?
 
@@ -19,15 +19,15 @@ Because why not.
 
 ## How do I use this?
 
-Right now it's all very, very simple. It's currently configured to work on _your own computer only_ (all localhost pretty much). And these instructions are written assuming you're on a Mac.
+Right now it's all very, very basic. It's currently configured to work on _your own computer only_ (all localhost pretty much). And these instructions are written assuming you're on a Mac.
 
 First of all, clone this repository somewhere on your computer.
 
 Open three Terminal windows. Using one of them, you need to make some self-signed SSL certificates:
 
 1. `cd` into the `op` folder you cloned.
-1. Run `openssl genrsa -out op.key.pem 2048`
-1. Next, run `openssl req -new -key op.key.pem -out op.csr.pem`
+1. Run `openssl genrsa -out op.key.pem 4096`
+1. Next, run `openssl req -new -sha512 -key op.key.pem -out op.csr.pem`
 1. Next, run `openssl x509 -req -in op.csr.pem -signkey op.key.pem -out op.crt.pem`
 
 Yes, you just made a self-signed certificate, which isn't great for "verified" authorized encrypted traffic, but for now it'll have to do until I come with an OP HTTPS/SSL alternative.
@@ -76,3 +76,4 @@ It's very simple right now... there's a window to manage which `onp` servers you
 - [ ] Add some kind of wildcard functionality to `onp` records? as in `* try 192.168.1.1` as a fallback at the end of a file?
 - [ ] Add some kind of client-side caching of `onp` records? if so, add a TTL to the server and client...?
 - [ ] Need to compress `otp` traffic with gzip or something.
+- [ ] Add in client-side encryption certificates for mutual TLS.
