@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 
 // set up some OTP server stuff
-const otp_server_port = 21337;
+const otp_server_port = 6;
 const otp_file_root = '../otproot'; // the local file path that represents the file root
 const index_path = '/lol'; // the default file to look up for root requests
 const otp_server_type = 'Obscure Transfer Protocol Basic Server'; // lol

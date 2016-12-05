@@ -4,7 +4,48 @@
 
 const tls = require('tls');
 const fs = require('fs');
-const default_onp_server_port = 21335;
+const default_onp_server_port = 4;
+const trust_directory = './trusted/';
+const expected_certificate_extension = '.crt.pem';
+var trusted_certificates = [];
+var trusted_certificates_raw = [];
+
+// load our known, trusted, but self-signed certificates
+let files_in_trust_directory = fs.readdirSync(trust_directory);
+for (let i in files_in_trust_directory) {
+    let filename = files_in_trust_directory[i];
+
+    // only pay attention to *.crt.pem files
+    if (filename.substr(-8) === expected_certificate_extension) {
+        filename = trust_directory + filename;
+        let cert = ('' + fs.readFileSync(filename)).trim();
+        if (cert === '') {
+            continue; // ignore any empty files
+        }
+        trusted_certificates.push(cert); // for use as a CA parameter to tsl.connect()
+        trusted_certificates_raw.push(parsePEMCertString(cert));
+    }
+}
+
+// a helper function that takes a Buffer or string with a PEM-formatted base64 certificate
+// and converts it to just the base64 string with no newlines
+function parsePEMCertString(input) {
+    input = '' + input; // make sure it's a string, not a Buffer
+    let input_pieces = input.split('\n');
+    let output = '';
+    for (let i in input_pieces) {
+        let piece = input_pieces[i].trim();
+        if (
+            piece === '' ||
+            piece === '-----BEGIN CERTIFICATE-----' ||
+            piece === '-----END CERTIFICATE-----'
+        ) {
+            continue;
+        }
+        output += piece;
+    }
+    return output;
+}
 
 /**
  * A simple helper function that gets a record back for the given hostname from a ONP server.
@@ -27,18 +68,34 @@ module.exports.getRecord = function(hostname, callback, onp_server, onp_server_p
 
     // TLS client options
     let tls_client_options = {
-        ca: [
-            fs.readFileSync('../op.crt.pem'),
-        ],
-        // rejectUnauthorized: false,
+        ca: trusted_certificates,
         checkServerIdentity: (servername, cert) => {
-            console.log('server name is: ' + servername);
-            console.log('cert is: ', cert);
-            if (cert === undefined || cert.subject === undefined && cert.subject.CN === undefined) {
-                // throw new Error('Certificate must have a CN field.');
+            // console.log('assessing trust for ONP service...');
+            // console.log('ONP server name is: ' + servername);
+            // console.log('ONP cert is: ', cert);
+            // console.log('ONP raw cert is: ', cert.raw);
+            console.log('testing ONP service\'s certificate (fingerprint: ' + cert.fingerprint + ')');
+            var cert_base64 = cert.raw.toString('base64');
+
+            // this is how we would save the certificate as a file
+            var cert_file =
+                '-----BEGIN CERTIFICATE-----' + '\n' +
+                cert_base64 + '\n' +
+                '-----END CERTIFICATE-----' + '\n';
+            // console.log(cert_file);
+
+            let found = false;
+            for (let i in trusted_certificates) {
+                // console.log('checking against: ', trusted_certificates_raw[i]);
+                if (trusted_certificates_raw[i] === cert_base64) {
+                    found = true;
+                    break;
+                }
             }
-            if (servername !== cert.subject.CN) {
-                // throw new Error('Certificate\'s CN "' + cert.subject.CN + '" does not match your request to hostname "'+servername+'"');
+            if (!found) {
+                throw new Error('Certificate not found in list of trusted certificates!');
+            } else {
+                console.log('ONP service\'s certificate has been verified.');
             }
         },
     };

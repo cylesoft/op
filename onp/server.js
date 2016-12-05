@@ -7,7 +7,7 @@ const tls = require('tls');
 const fs = require('fs');
 
 // set up some basics for server config
-const onp_server_port = 21335;
+const onp_server_port = 4;
 const definition_regex = /^(.+) ([a-z]+) ([a-z0-9\.]+)$/i;
 var onp_addresses = {};
 
@@ -69,9 +69,10 @@ const server_options = {
 
 // create our TLS server to listen for new ONP requests
 const server = tls.createServer(server_options, function(c) {
+    let unique_socket_id = Math.floor(Math.random() * 100000000); // not really very unique, i know
     let currentTime = new Date();
-    console.log(currentTime.toString() + ' client connected');
-    console.log(currentTime.toString() + ' connection is ', c.authorized ? 'authorized' : 'unauthorized');
+    console.log(currentTime.toString() + ' [' + unique_socket_id + '] client connected');
+    console.log(currentTime.toString() + ' [' + unique_socket_id + '] client connection trusted? ' + (c.authorized ? 'trusted' : 'not trusted'));
 
     // set our connection encoding
     c.setEncoding('utf8');
@@ -79,7 +80,7 @@ const server = tls.createServer(server_options, function(c) {
     // do this when a client disconnects
     c.on('end', function() {
         let currentTime = new Date();
-        console.log(currentTime.toString() + ' client disconnected');
+        console.log(currentTime.toString() + ' [' + unique_socket_id + '] client disconnected');
     });
 
     // do this on incoming data from our connected client
@@ -88,7 +89,7 @@ const server = tls.createServer(server_options, function(c) {
         let request_string = data.toString().trim();
         let new_response = 'nope'; // default, in case all else fails here
 
-        console.log(currentTime.toString() + ' new request: ' + request_string);
+        console.log(currentTime.toString() + ' [' + unique_socket_id + '] new request: ' + request_string);
 
         // check and see if we have an address for the thing they're asking for
         let address = onp_addresses[request_string];
@@ -98,7 +99,7 @@ const server = tls.createServer(server_options, function(c) {
         }
 
         currentTime = new Date();
-        console.log(currentTime.toString() + ' new response: ' + new_response);
+        console.log(currentTime.toString() + ' [' + unique_socket_id + '] new response: ' + new_response);
         c.write(new_response + '\n');
         c.end(); // we're done
     });

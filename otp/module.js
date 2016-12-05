@@ -4,6 +4,7 @@
  */
 const fs = require('fs');
 const tls = require('tls');
+const default_otp_server_port = 6;
 
 // this'll hold our OTP helper functions
 const OTP = {};
@@ -62,7 +63,7 @@ OTP.takethis = function(ip, path, hostname, data, callback, otp_server_port) {
 OTP.request = function(verb, ip, path, hostname, data, callback, otp_server_port) {
     // make sure we have a OTP server port to access
     if (otp_server_port === undefined) {
-        otp_server_port = 21337;
+        otp_server_port = default_otp_server_port;
     }
 
     // make sure a path is specified of some kind

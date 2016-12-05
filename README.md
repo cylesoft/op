@@ -32,10 +32,12 @@ Open three Terminal windows. Using one of them, you need to make some self-signe
 
 Yes, you just made a self-signed certificate, which isn't great for "verified" authorized encrypted traffic, but for now it'll have to do until I come with an OP HTTPS/SSL alternative.
 
+Create a directory in the `onp` folder named `trusted`, and make a copy of your `op.crt.pem` file in there.
+
 Now that you have your cert set up, here's what you do with the project to test this out and see it work:
 
-1. in one Terminal window, go to the `onp` folder, and run `node server.js`
-1. in another Terminal window, go to the `otp` folder, and run `node server.js`
+1. in one Terminal window, go to the `onp` folder, and run `sudo node server.js`
+1. in another Terminal window, go to the `otp` folder, and run `sudo node server.js`
 1. in the final Terminal window, go to the `otp` folder, and run `node client.js "cyle.lol"`
 
 That final step does the following...
