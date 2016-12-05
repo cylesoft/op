@@ -4,50 +4,16 @@
  */
 const fs = require('fs');
 const tls = require('tls');
+
 const default_otp_server_port = 6;
+const OPUtils = require('../lib/utils.js');
+
+// get our trusted certificates
+const trust_directory = './trusted/';
+const trusted_certificates = OPUtils.getCertificatesInDirectory(trust_directory);
 
 // this'll hold our OTP helper functions
 const OTP = {};
-
-/**
- * A helper function to do a "hey" OTP request.
- *
- * @param {String} ip The IP address to send the request to.
- * @param {String} path The resource path to request from the server.
- * @param {String} hostname The hostname of the OTP server you're sending a request to.
- * @param {Function} callback The function to call when the request has been completed; should expect a string.
- * @param {Number} otp_server_port Optional. The OTP server port to access.
- */
-OTP.hey = function(ip, path, hostname, callback, otp_server_port) {
-    this.request('hey', ip, path, hostname, undefined, callback, otp_server_port);
-}
-
-/**
- * A helper function to do a "req" OTP request.
- *
- * @param {String} ip The IP address to send the request to.
- * @param {String} path The resource path to request from the server.
- * @param {String} hostname The hostname of the OTP server you're sending a request to.
- * @param {Function} callback The function to call when the request has been completed; should expect a string.
- * @param {Number} otp_server_port Optional. The OTP server port to access.
- */
-OTP.req = function(ip, path, hostname, callback, otp_server_port) {
-    this.request('req', ip, path, hostname, undefined, callback, otp_server_port);
-}
-
-/**
- * A helper function to do a "takethis" OTP request.
- *
- * @param {String} ip The IP address to send the request to.
- * @param {String} path The resource path to request from the server.
- * @param {String} hostname The hostname of the OTP server you're sending a request to.
- * @param {String} data The data to pass along to the server in the request. Must be a string.
- * @param {Function} callback The function to call when the request has been completed; should expect a string.
- * @param {Number} otp_server_port Optional. The OTP server port to access.
- */
-OTP.takethis = function(ip, path, hostname, data, callback, otp_server_port) {
-    this.request('takethis', ip, path, hostname, data, callback, otp_server_port);
-}
 
 /**
  * A helper function to do a totally custom OTP request.
@@ -73,25 +39,16 @@ OTP.request = function(verb, ip, path, hostname, data, callback, otp_server_port
 
     // our TLS client options
     let tls_client_options = {
-        ca: [
-            fs.readFileSync('../op.crt.pem'),
-        ],
+        ca: trusted_certificates.raw,
         checkServerIdentity: (hostname, cert) => {
-            console.log('server name is: ' + hostname);
-            console.log('cert is: ', cert);
-            if (cert === undefined || cert.subject === undefined && cert.subject.CN === undefined) {
-                // throw new Error('Certificate must have a CN field.');
-            }
-            if (hostname !== cert.subject.CN) {
-                // throw new Error('Certificate\'s CN "' + cert.subject.CN + '" does not match your request to hostname "'+hostname+'"');
-            }
+            OPUtils.ensureCertificateIsTrusted(cert, trusted_certificates.certs);
         },
     };
 
     // set up our TLS stream to the CTP server
     let tls_stream = tls.connect(otp_server_port, ip, tls_client_options, function() {
-        console.log('client connected to OTP server');
-        console.log('connection is ' + (tls_stream.authorized ? 'authorized' : 'unauthorized'));
+        console.log('Client connected to OTP service');
+        console.log('Connection to OTP service is ' + (tls_stream.authorized ? 'trusted' : 'NOT trusted'));
 
         // build our request string
         let request_string = 'otp/1.0' + '\n' + verb + '\n' + hostname + path;
@@ -102,7 +59,7 @@ OTP.request = function(verb, ip, path, hostname, data, callback, otp_server_port
         }
 
         // send along the request to the CTP server
-        console.log('sending request: ' + request_string);
+        console.log('Sending request: ' + request_string);
         tls_stream.write(request_string + '\n');
     });
 
