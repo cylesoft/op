@@ -60,8 +60,8 @@ It's very simple right now... there's a window to manage which `onp` servers you
 
 ## Technical crap
 
-- `onp` runs on port 21335 by default
-- `otp` runs on port 21337 by default
+- `onp` runs on port 4 by default
+- `otp` runs on port 6 by default
 - all of this is still TCP-based... not sure how I feel about that part yet, if I want to dive deeper
 - "real" TLS certificates still rely on old ideas, kind of, which I don't want, so I may accept the reality of self-signed certs
 - `onp` and `otp` are standard specifications much like DNS and HTTP, and I've started documenting them in the `docs` folder.
