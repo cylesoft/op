@@ -32,7 +32,7 @@ Open three Terminal windows. Using one of them, you need to make some self-signe
 
 Yes, you just made a self-signed certificate, which isn't great for "verified" authorized encrypted traffic, but for now it'll have to do until I come with an OP HTTPS/SSL alternative.
 
-Create a directory in the `onp` folder named `trusted`, and make a copy of your `op.crt.pem` file in there.
+Create a directory in the `onp` folder named `trusted`, and make a copy of your `op.crt.pem` file in there. Again: create a directory in the `browser-electron` folder named `trusted`, and make a copy of your `op.crt.pem` file in there.
 
 Now that you have your cert set up, here's what you do with the project to test this out and see it work:
 
