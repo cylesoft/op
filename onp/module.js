@@ -35,6 +35,7 @@ ONP.getRecord = function(hostname, callback, onp_server, onp_server_port) {
 
     // TLS client options
     let tls_client_options = {
+        rejectUnauthorized: true, // specify here so it cannot be tampered with via process.env
         ca: trusted_certificates.raw,
         checkServerIdentity: (servername, cert) => {
             OPUtils.ensureCertificateIsTrusted(cert, trusted_certificates.certs);

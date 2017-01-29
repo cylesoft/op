@@ -39,6 +39,7 @@ OTP.request = function(verb, ip, path, hostname, data, callback, otp_server_port
 
     // our TLS client options
     let tls_client_options = {
+        rejectUnauthorized: true, // specify here so it cannot be tampered with via process.env
         ca: trusted_certificates.raw,
         checkServerIdentity: (hostname, cert) => {
             OPUtils.ensureCertificateIsTrusted(cert, trusted_certificates.certs);
