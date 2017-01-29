@@ -21,12 +21,22 @@ const onp_ip = '127.0.0.1';
 
 // this'll hold our full outgoing request
 var request = '';
+var request_verb = '';
 
 if (process.argv[2] === undefined) {
+    console.log('no verb given');
+    process.exit(1);
+} else {
+    request_verb = process.argv[2].trim();
+}
+
+console.log('request verb is: ' + request_verb);
+
+if (process.argv[3] === undefined) {
     console.log('no host given');
     process.exit(1);
 } else {
-    request = process.argv[2].trim();
+    request = process.argv[3].trim();
 }
 
 console.log('request is for: ' + request);
@@ -59,7 +69,7 @@ if (request_is_ip_already) {
     console.log('request is an IP already, no ONP lookup necessary');
 
     // do the OTP request then
-    otp.req(request_host, request_path, request_host, function(page) {
+    otp.request(request_verb, request_host, request_path, request_host, undefined, function(page) {
         console.log(page); // got it!
     });
 } else {
@@ -86,7 +96,7 @@ if (request_is_ip_already) {
             console.log('IP for hostname ' + request_host + ' is ' + otp_ip);
 
             // do the OTP request now
-            otp.req(otp_ip, request_path, request_host, function(page) {
+            otp.request(request_verb, otp_ip, request_path, request_host, undefined, function(page) {
                 console.log(page); // got it!
             });
         } else if (onp_parts[0] === 'try' && onp_parts.length === 2) {
