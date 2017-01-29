@@ -56,6 +56,28 @@ The person who wants to give out their certificate uses `cert_server.js` to adve
 
 Certificates are saved to a `trusted` directory by default. Copy these certificates to your ONP and OTP `trusted` folders to include the certificates as valid for those services.
 
+### Certificate Server Usage
+
+1. Go to the `ocp` folder in this repo.
+1. Run `npm install` to install dependencies.
+1. Pick a port number and a one-word command, for this example I'll use port `9000` and the command `ello`
+1. Run `node cert_server.js 9000 ello`
+
+You are now running a server on the specified port. It'll wait for any clients, expecting them to use the command you specified. If a client connects and does not use the right command, it'll be disconnected immediately. If a client connects and does nothing for more than 3 seconds, it'll be disconnected.
+
+Clients connecting to your server will be logged. You are strongly encouraged to NOT leave your certificate server running all the time; only have it running when you want to share your certificate with someone. Use CTRL+C to close your server when you are done sharing your certificate.
+
+Be aware that all interactions with the certificate server are **unencrypted**, so expect everyone and anyone to know your command as soon as it's used by a client once.
+
+### Certificate Fetcher Usage
+
+1. Go to the `ocp` folder in this repo.
+1. Run `npm install` to install dependencies.
+1. Make sure you know the IP address, port number, and command the server expects.
+1. Run `node cert_fetcher.js 127.0.0.1 9000 ello`
+
+The script will connect to the specified IP, on the specified port, and run the specified command immediately upon opening the connection. If the command is accepted, you will automatically download the server's certificate. You will then be prompted with information about the certificate, which you should verify with the certificate owner. If the certificate is correct, you can save it locally when prompted. Otherwise, it will be discarded.
+
 ## The Browser
 
 There's a OP GUI browser included here, but it's still in development, and it's [Electron](http://electron.atom.io/) based.
@@ -79,6 +101,7 @@ It's very simple right now... there's a window to manage which `onp` servers you
 
 ## To-do list
 
+- [ ] Add symmetric encryption of certificate to OCP.
 - [ ] Loading/progress indicator in browser UI.
 - [ ] Update browser to support multiple `onp` servers; add UI to show attempts and which one ended up working.
 - [ ] Add to demo `onp` client support for following "try" responses.
