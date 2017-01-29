@@ -1,0 +1,9 @@
+{
+    "name": "ocp",
+    "version": "0.0.1",
+    "description": "obscure certificate protocol",
+    "dependencies": {
+        "x509": "^0.3.0"
+    },
+    "license": "MIT"
+}

@@ -30,7 +30,7 @@ Open three Terminal windows. Using one of them, you need to make some self-signe
 1. Next, run `openssl req -new -sha512 -key op.key.pem -out op.csr.pem`
 1. Next, run `openssl x509 -req -in op.csr.pem -signkey op.key.pem -out op.crt.pem`
 
-Yes, you just made a self-signed certificate, which isn't great for "verified" authorized encrypted traffic, but for now it'll have to do until I come with an OP HTTPS/SSL alternative.
+Yes, you just made a self-signed certificate. Since these certificates will always be transmitted in plain text over the wire for every ONP and OTP session, **certificates should never contain obviously personally identifiable information** in any of the certificate's metadata fields, unless you just don't care.
 
 Create folders named `trusted` inside the `onp`, `otp`, and `browser-electron` folders. Copy your `op.crt.pem` into each of these new `trusted` folders to make sure your ONP service, OTP service, and browser trust the self-signed certificate you just made. This is needed for our tests to work, but in the wild you'd be collecting whatever certificates you trust and placing them in these folders (probably just the `browser-electron/trusted/` folder).
 
@@ -45,6 +45,16 @@ That final step does the following...
 1. uses my `onp` module to translate the desired server hostname "cyle.lol" to the IP "127.0.0.1"
 1. sends the request `req cyle.lol/` to the `otp` server at that IP.
 1. renders out the response, which should be a simple text file, in Markdown format, from the "otproot" folder.
+
+## Getting Certificates
+
+A big part of ONP/OTP are trusted certificates. The best, most secure way of getting these certificates is literally to meet the person you want to connect with and get their certificates in person, via thumbdrive or something like that.
+
+However, this is not always easy. Packaged with ONP and OTP in this repo is also **OCP**, AKA Obscure Certificate Protocol, a simple socket server/client for fetching certificates over the wire.
+
+The person who wants to give out their certificate uses `cert_server.js` to advertise their certificate in plain text over the wire, but specifying a specific command to use. The person who wants that certificate uses `cert_fetcher.js` to connect to the other person's server using the right command and then has the option to download the certificate locally and use it for ONP and OTP. The person on the receiving end will see the certificate's info and fingerprint, which they should verify with the owner before saving.
+
+Certificates are saved to a `trusted` directory by default. Copy these certificates to your ONP and OTP `trusted` folders to include the certificates as valid for those services.
 
 ## The Browser
 
