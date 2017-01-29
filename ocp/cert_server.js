@@ -2,9 +2,9 @@
  * The job of this server is just to advertise your certificate for others to download,
  * making it easier to share.
  *
- * Arguments are port and command to expect from clients;
- * Example: node cert_server.js 9000 ello
- * In that example, 9000 is the port and "ello" is the command you expect from clients.
+ * Arguments are file path, port, and command to expect from clients;
+ * Example: node cert_server.js ./cert.pem 9000 ello
+ * In that example, "./cert.pem" is the file path of certificate, 9000 is the port, and "ello" is the command you expect from clients.
  * If any other command is given on connect, the connection will be dropped immediately.
  */
 
@@ -16,28 +16,43 @@ const fs = require('fs');
 const x509 = require('x509');
 
 // set up some variables
+var certificate_filepath;
 var accepted_command;
 var cert_server_port;
 var connection_timeout = 3000; // clients have 3 seconds before getting kicked
 
-// make sure there is a port to use
+// make sure there is a certificate to send
 if (process.argv[2] === undefined) {
+    console.log('Please supply a certificate to advertise.');
+    process.exit(1);
+} else {
+    certificate_filepath = process.argv[2].trim();
+}
+
+// make sure a file actually exists there
+if (!fs.existsSync(certificate_filepath)) {
+    console.log('A certificate does not exist at the given filepath.');
+    process.exit(1);
+}
+
+// make sure there is a port to use
+if (process.argv[3] === undefined) {
     console.log('Please supply a port to advertise on.');
     process.exit(1);
 } else {
-    cert_server_port = process.argv[2].trim() * 1;
+    cert_server_port = process.argv[3].trim() * 1;
 }
 
 // make sure there is a command to expect
-if (process.argv[3] === undefined) {
+if (process.argv[4] === undefined) {
     console.log('Please supply the command to expect from clients.');
     process.exit(1);
 } else {
-    accepted_command = process.argv[3].trim();
+    accepted_command = process.argv[4].trim();
 }
 
 // try to get the certificate we'll be sending out
-var certificate_raw = fs.readFileSync('../op.crt.pem').toString();
+var certificate_raw = fs.readFileSync(certificate_filepath).toString();
 var certificate = x509.parseCert(certificate_raw);
 
 // show our own certificate info
